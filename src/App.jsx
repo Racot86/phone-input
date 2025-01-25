@@ -1,16 +1,15 @@
 
 import './App.css'
 
-import SuperPhoneInput from "./components/PhoneInput.jsx";
 import AdvancedPhoneInput from "./components/AdvancedPhoneInput.jsx";
+import LoginForm from "./components/LoginForm.jsx";
 
 function App() {
 
 
   return (
     <>
-      <SuperPhoneInput />
-        <AdvancedPhoneInput />
+        <LoginForm />
     </>
   )
 }

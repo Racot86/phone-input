@@ -2,21 +2,22 @@ import {flags} from "../utils/functions.js";
 import {countries} from "../constants/countries.js";
 import {Box, ClickAwayListener, InputAdornment, Popper, TextField, Typography} from "@mui/material";
 import globeIcon from "../assets/globe.svg";
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
+import {parsePhoneNumberFromString} from "libphonenumber-js";
+
 
 const AdvancedPhoneInput = ({
-                                sx,
+                                sx,onChange,...otherProps
                             })=>{
     //input staff
     const flagData = flags();
-    console.log(countries);
     const inputRef = useRef();
     const [open, setOpen] = useState(false);
     const [animationStyle, setAnimationStyle] = useState({});
     const [countryCode, setCountryCode] = useState("");
     const [filteredCountries, setFilteredCountries] = useState(countries);
     const [searchQuery, setSearchQuery] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState('');
 
     const getFilteredCountries =(searchValue)=> {
         setFilteredCountries(countries.filter(
@@ -34,6 +35,7 @@ const AdvancedPhoneInput = ({
         setSearchQuery('');
         setCountryCode(country.code);
         setPhoneNumber('+' + country.phone);
+        onChange('+' + country.phone);
         getFilteredCountries('');
 
         setOpen(false)
@@ -61,9 +63,36 @@ const AdvancedPhoneInput = ({
         }
         setOpen((prev) => !prev);
     };
+    useEffect(() => {
+        if(phoneNumber===''){
+            setCountryCode('')
+        }
+    },[phoneNumber])
     //EOF input staff
 
+    const getCountryCodeFromNumber = (phoneNumber) => {
+        try {
+            const phone = parsePhoneNumberFromString(phoneNumber);
+            if (phone && phone.country) {
+                return phone.country; // Country ISO code (e.g., "US", "GB")
+            }
+            return null; // If country cannot be determined
+        } catch {
+            return null;
+        }
+    };
+
     //engagement with formik
+    const onChangeHandler = (e) => {
+        if (e.target.value.length <= 15) {
+            const code = getCountryCodeFromNumber(e.target.value)
+            if (code) {
+                setCountryCode(code);
+            }
+            setPhoneNumber(e.target.value)
+            onChange(e.target.value);
+        }
+    }
 
 
 
@@ -75,7 +104,7 @@ const AdvancedPhoneInput = ({
                 fullWidth
                 ref={inputRef}
                 value={phoneNumber}
-                onChange={(e)=>{setPhoneNumber(e.target.value)}}
+                onChange={onChangeHandler}
                 sx={{
                     ...sx
                 }}
@@ -96,6 +125,7 @@ const AdvancedPhoneInput = ({
                         </InputAdornment>
                     ),
                 }}
+                {...otherProps}
             />
 
             <Popper
